@@ -1,29 +1,3 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-import json
-import os
-import subprocess
-import threading
-from datetime import datetime
-import time
-
-app = Flask(__name__)
-app.secret_key = 'your_secret_key_here' # Doesn't need to be changed
-
-TOKEN = "your_life360_token_here" # Follow the guide here to get yours: https://github.com/pnbruckner/ha-life360?tab=readme-ov-file#access-type--token
-HEADERS = [
-    "Authorization: Bearer " + TOKEN,
-    "User-Agent: Life360/21.8.0 CFNetwork/1220.1 Darwin/20.3.0",
-    "Accept: application/json",
-    "Cache-Control: no-cache",
-    "Accept-Language: en-US",
-    "X-Life360-Client-Identifier: 12345678-1234-1234-1234-1234567890ab",
-    "Cookie: _cfuvid=6rT1GYBoX_fa7hYvRnB.oMX0Zi_riuNfqqFhvwH60jA-1751407117597-0.0.1.1-604800000; __cf_bm=ur21pKl.Gs2aGPRNiW2p_FNOwNzR9STuvuemqw7pQVQ-1751407117-1.0.1.1-w4ve4OQX5WdzCiMVRFC0k11kHU4MdrSTIS6_J.fIPsBSAVmmG9Jo6Qq..xCVMsWhEr3R111nAcWh3DmvBVWrwnemii8p_tiS...HWXL2_UE"
-]
-INFO_FILE = "info.json"
-
-# Get your own google maps API key from: https://developers.google.com/maps/documentation/javascript/get-api-key
-GOOGLE_MAPS_API_KEY = "your_google_maps_token_here"
-
 def curl_get(url):
     cmd = ["curl", "-k", "-s"]
     for header in HEADERS:
@@ -226,6 +200,73 @@ def circle_map_view(cid):
 def api_circle_locations(cid):
     locations = get_member_locations(cid)
     return jsonify(locations)
+
+@app.route('/specific_member', methods=['GET', 'POST'])
+def specific_member():
+    info = load_info()
+    
+    if request.method == 'GET':
+        return render_template('select_circle.html', 
+                            circles=info.get("circles", {}), 
+                            action_name="Select Member")
+    
+    if 'cid' in request.form:
+        cid = request.form['cid']
+        session['selected_cid'] = cid
+        circle_name = info['circles'].get(cid, cid)
+        members = info['members'].get(cid, {})
+        return render_template('select_member.html', 
+                             cid=cid, 
+                             circle_name=circle_name, 
+                             members=members)
+    
+    if 'mid' in request.form:
+        cid = session.get('selected_cid', '')
+        mid = request.form['mid']
+        if cid and mid:
+            return redirect(url_for('specific_member_result', cid=cid, mid=mid))
+    
+    return redirect(url_for('index'))
+
+@app.route('/specific_member/<cid>/<mid>')
+def specific_member_result(cid, mid):
+    data = curl_get(f"https://api.life360.com/v3/circles/{cid}/members/{mid}")
+    return render_template('specific_member.html', member=data)
+
+@app.route('/member_request', methods=['GET', 'POST'])
+def member_request():
+    info = load_info()
+    
+    if request.method == 'GET':
+        return render_template('select_circle.html', 
+                            circles=info.get("circles", {}), 
+                            action_name="Send Member Request")
+    
+    if 'cid' in request.form:
+        cid = request.form['cid']
+        session['selected_cid'] = cid
+        circle_name = info['circles'].get(cid, cid)
+        members = info['members'].get(cid, {})
+        return render_template('select_member.html', 
+                             cid=cid, 
+                             circle_name=circle_name, 
+                             members=members,
+                             is_request=True)
+    
+    if 'mid' in request.form:
+        cid = session.get('selected_cid', '')
+        mid = request.form['mid']
+        if cid and mid:
+            threading.Thread(target=send_member_request, args=(cid, mid)).start()
+            return render_template('processing.html', 
+                                 message="Sending member request...",
+                                 redirect_url=url_for('index'))
+    
+    return redirect(url_for('index'))
+
+def send_member_request(cid, mid):
+    url = f"https://api.life360.com/v3/circles/{cid}/members/{mid}/request"
+    curl_post(url, "{}")
 
 if __name__ == '__main__':
     app.run(debug=True)
