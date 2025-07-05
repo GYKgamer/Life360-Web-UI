@@ -42,10 +42,32 @@
             <div class="col">
                 <div class="card h-100 text-center">
                     <div class="card-body">
+                        <div class="option-icon">🔍</div>
+                        <h5 class="card-title">Circle Details</h5>
+                        <p class="card-text">View details of a specific circle</p>
+                        <a href="{{ url_for('circle_details') }}" class="btn btn-primary">Select Circle</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
                         <div class="option-icon">👥</div>
                         <h5 class="card-title">Circle Members</h5>
                         <p class="card-text">View members of a circle</p>
                         <a href="{{ url_for('circle_members') }}" class="btn btn-primary">Select Circle</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="option-icon">👤</div>
+                        <h5 class="card-title">Specific Member</h5>
+                        <p class="card-text">View details of a specific member</p>
+                        <a href="{{ url_for('specific_member') }}" class="btn btn-primary">Select Member</a>
                     </div>
                 </div>
             </div>
