@@ -2,7 +2,7 @@
 
 A Simple Flask-based web application that interacts with the Life360 API to provide a user-friendly interface for managing circles, members, and locations.
 
-![image](https://github.com/user-attachments/assets/320c3dfb-cead-4b67-bbc0-6e855dcca0f8)
+![image](https://github.com/user-attachments/assets/d06dec4b-e377-473b-9ef6-73b9cd5fe79c)
 
 ## Features
 
