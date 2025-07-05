@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Circle Details - Life360 API Client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .member-card { transition: transform 0.2s; margin-bottom: 20px; height: 100%; }
+        .member-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .status-badge { position: absolute; top: 15px; right: 15px; }
+        .location-indicator { font-size: 0.85rem; }
+        .section-title { border-bottom: 2px solid #0d6efd; padding-bottom: 8px; margin-bottom: 15px; }
+        .feature-badge { margin-right: 5px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="text-center mb-4">
+            <h1>Circle Details</h1>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+        
+        <div class="card mb-5">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ circle.name }}</h4>
+                <span class="badge bg-light text-dark">ID: {{ circle.id }}</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Type:</strong> 
+                                <span class="badge bg-info">{{ circle.type|capitalize }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Created:</strong> 
+                                {{ circle.createdAt|timestamp_to_date }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Members:</strong> 
+                                <span class="badge bg-primary">{{ circle.memberCount }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h5 class="section-title">Features</h5>
+                            <div class="d-flex flex-wrap">
+                                {% for key, value in circle.features.items() %}
+                                <div class="feature-badge">
+                                    <span class="badge bg-secondary">
+                                        {{ key|replace('_', ' ')|title }}: 
+                                        {% if value is none %}
+                                            None
+                                        {% else %}
+                                            {{ value }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h5 class="section-title">Notifications</h5>
+                            <div class="d-flex">
+                                <div class="me-4">
+                                    <strong>Unread Messages:</strong>
+                                    <span class="badge bg-{% if circle.unreadMessages != '0' %}danger{% else %}success{% endif %}">
+                                        {{ circle.unreadMessages }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <strong>Unread Notifications:</strong>
+                                    <span class="badge bg-{% if circle.unreadNotifications != '0' %}danger{% else %}success{% endif %}">
+                                        {{ circle.unreadNotifications }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="color-preview" style="background-color: #{{ circle.color }}; height: 100px; border-radius: 8px;"></div>
+                        <div class="text-center mt-2">
+                            <small>Circle Color: #{{ circle.color }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h3 class="mb-4">Members</h3>
+        <div class="row">
+            {% for member in circle.members %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card member-card">
+                    <div class="card-header position-relative">
+                        <h5 class="card-title mb-0">
+                            {{ member.firstName }} {{ member.lastName }}
+                            {% if member.isAdmin == '1' %}
+                            <span class="badge bg-warning">Admin</span>
+                            {% endif %}
+                        </h5>
+                        <span class="status-badge badge bg-{% if member.features.disconnected == '0' %}success{% else %}danger{% endif %}">
+                            {% if member.features.disconnected == '0' %}Online{% else %}Offline{% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            {% if member.avatar %}
+                                <img src="{{ member.avatar }}" class="rounded me-3" width="60" height="60">
+                            {% else %}
+                                <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-person" style="font-size: 24px;"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div><strong>ID:</strong> {{ member.id }}</div>
+                                <div><strong>Since:</strong> {{ member.createdAt|timestamp_to_date }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-indicator mb-3">
+                            <i class="bi bi-geo-alt"></i>
+                            {% if member.location.name %}
+                                {{ member.location.name }}
+                            {% else %}
+                                {{ member.location.address1 }}, {{ member.location.address2 }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <i class="bi bi-battery"></i> 
+                                <span class="badge bg-{% if member.location.battery|int < 20 %}danger{% elif member.location.battery|int < 50 %}warning{% else %}success{% endif %}">
+                                    {{ member.location.battery }}%
+                                </span>
+                            </div>
+                            <div>
+                                {% if member.location.charge == '1' %}
+                                <i class="bi bi-lightning-charge text-success"></i> Charging
+                                {% else %}
+                                <i class="bi bi-plug text-muted"></i> Not charging
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</body>
+</html>

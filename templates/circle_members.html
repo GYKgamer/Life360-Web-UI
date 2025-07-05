@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Circle Members - Life360 API Client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .member-card { margin-bottom: 20px; }
+        .status-badge { position: absolute; top: 15px; right: 15px; }
+        .location-indicator { font-size: 0.85rem; }
+        .battery-indicator { 
+            width: 100%; 
+            height: 20px; 
+            background-color: #e9ecef; 
+            border-radius: 10px; 
+            overflow: hidden;
+            position: relative;
+        }
+        .battery-fill {
+            height: 100%;
+            background-color: #198754;
+            border-radius: 10px;
+        }
+        .battery-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            line-height: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="text-center mb-4">
+            <h1>Circle Members</h1>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+        
+        <div class="row">
+            {% for member in members %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card member-card">
+                    <div class="card-header position-relative">
+                        <h5 class="card-title mb-0">
+                            {{ member.firstName }} {{ member.lastName }}
+                            {% if member.isAdmin == '1' %}
+                            <span class="badge bg-warning">Admin</span>
+                            {% endif %}
+                        </h5>
+                        <span class="status-badge badge bg-{% if member.features.disconnected == '0' %}success{% else %}danger{% endif %}">
+                            {% if member.features.disconnected == '0' %}Online{% else %}Offline{% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            {% if member.avatar %}
+                                <img src="{{ member.avatar }}" class="rounded me-3" width="60" height="60">
+                            {% else %}
+                                <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-person" style="font-size: 24px;"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div><strong>ID:</strong> {{ member.id }}</div>
+                                <div><strong>Since:</strong> {{ member.createdAt|timestamp_to_date }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="location-indicator">
+                                <i class="bi bi-geo-alt"></i>
+                                {% if member.location.name %}
+                                    {{ member.location.name }}
+                                {% else %}
+                                    {{ member.location.address1 }}, {{ member.location.address2 }}
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">
+                                {{ member.location.latitude }}, {{ member.location.longitude }}
+                                (Accuracy: {{ member.location.accuracy }}m)
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Battery:</strong>
+                            <div class="battery-indicator mt-1">
+                                <div class="battery-fill" style="width: {{ member.location.battery }}%; 
+                                    background-color: 
+                                    {% if member.location.battery|int < 20 %}#dc3545
+                                    {% elif member.location.battery|int < 50 %}#ffc107
+                                    {% else %}#198754
+                                    {% endif %};">
+                                    <div class="battery-text">{{ member.location.battery }}%</div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small>
+                                    {% if member.location.charge == '1' %}
+                                    <i class="bi bi-lightning-charge text-success"></i> Charging
+                                    {% else %}
+                                    <i class="bi bi-plug text-muted"></i> Not charging
+                                    {% endif %}
+                                </small>
+                                <small>
+                                    {% if member.location.wifiState == '1' %}
+                                    <i class="bi bi-wifi text-success"></i> WiFi
+                                    {% else %}
+                                    <i class="bi bi-signal text-warning"></i> Cellular
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <strong>Last Update:</strong> 
+                            {{ member.location.timestamp|timestamp_to_datetime }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</body>
+</html>

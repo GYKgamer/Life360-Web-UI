@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Circles List - Life360 API Client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .circle-card {
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+        .circle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .member-count {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="text-center mb-4">
+            <h1>Your Circles</h1>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+        
+        <div class="row">
+            {% for circle in circles %}
+            <div class="col-md-6">
+                <div class="card circle-card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between">
+                        <h4 class="mb-0">{{ circle.name }}</h4>
+                        <span class="member-count">{{ circle.memberCount }} members</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p><strong>ID:</strong> {{ circle.id }}</p>
+                                <p><strong>Created:</strong> {{ circle.createdAt|timestamp_to_date }}</p>
+                                <p><strong>Type:</strong> <span class="badge bg-info">{{ circle.type }}</span></p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="color-preview" style="background-color: #{{ circle.color }}; 
+                                    width: 80px; 
+                                    height: 80px; 
+                                    border-radius: 50%;
+                                    margin: 0 auto;"></div>
+                                <small>Circle Color: #{{ circle.color }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{{ url_for('circle_details_result', cid=circle.id) }}" class="btn btn-outline-primary">
+                                View Details
+                            </a>
+                            <a href="{{ url_for('circle_members_result', cid=circle.id) }}" class="btn btn-outline-success">
+                                View Members
+                            </a>
+                            <a href="{{ url_for('circle_map_view', cid=circle.id) }}" class="btn btn-outline-info">
+                                View Map
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

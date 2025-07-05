@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Circle - Life360 API Client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="text-center mb-4">
+            <h1>{{ action_name }}</h1>
+            <p>Select a circle from the list</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Available Circles</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Select Circle:</label>
+                                <div class="list-group">
+                                    {% for cid, cname in circles.items() %}
+                                    <label class="list-group-item">
+                                        <input class="form-check-input me-2" type="radio" name="cid" value="{{ cid }}">
+                                        <strong>{{ cname }}</strong> ({{ cid }})
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg">Select Circle</button>
+                                <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
